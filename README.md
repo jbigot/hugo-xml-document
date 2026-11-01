@@ -35,8 +35,12 @@ and read a resource:
 An empty resource gives an empty map. Malformed XML stops the build. The result is cached per
 resource, and a `hugo server` rebuild re-parses only the files that changed.
 
-The partials `xmldoc/read.html` (the template reader) and `xmldoc/native.html` (whether this
-Hugo has the native decoder) are internals; only `xmldoc/unmarshal.html` is public.
+Only `xmldoc/unmarshal.html` is public. Three internals stay stable for the tests of the
+modules that use this one, which may need to force the template reader: `xmldoc/read.html` (the
+template reader on a resource, cached as `xmldoc/unmarshal.html` is), `xmldoc/parse.html` (the
+template reader on a string, without cache; it stops the build on malformed XML with an error
+that starts with `xmldoc/parse:`) and `xmldoc/native.html` (whether this Hugo has the native
+decoder).
 
 ## Tests
 

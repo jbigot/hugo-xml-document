@@ -7,7 +7,7 @@ SPDX-License-Identifier: MIT
        reader directly. Cached per resource, as transform.Unmarshal is.
        It uses the native decoder of gohugoio/hugo#15485 when this Hugo has it
        (xmldoc/native.html), and the template reader otherwise, with the same result.
-       Usage: partial "xmldoc/unmarshal.html" (resources.Get "doxygen/pdi/index.xml") */ -}}
+       Usage: partial "xmldoc/unmarshal.html" (resources.Get "data/doc.xml") */ -}}
 {{- if partialCached "xmldoc/native.html" "" "" -}}
   {{- return transform.Unmarshal (dict "format" "xml" "targetType" "document") . -}}
 {{- end -}}

@@ -1,0 +1,54 @@
+# SPDX-FileCopyrightText: 2026 Julien Bigot <julien@julien-bigot.fr>
+# SPDX-License-Identifier: MIT
+# Compare both readers with expat (tests/run.sh). The native decoder is in Hugo's fork
+# (docsygen-native, not released): tests/lib.sh builds it from a clone when the cache has no
+# binary for its commit.
+name: Tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  readers:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        reader: [template, unmarshal]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+      - name: Set up Go
+        uses: actions/setup-go@v7
+        with:
+          go-version: stable
+          cache: false
+      - name: Clone the Hugo fork
+        id: fork
+        run: |
+          git clone --depth 1 --branch docsygen-native https://github.com/jbigot/hugo.git "$RUNNER_TEMP/hugo"
+          echo "HUGO_SRC=$RUNNER_TEMP/hugo" >> "$GITHUB_ENV"
+          echo "commit=$(git -C "$RUNNER_TEMP/hugo" rev-parse --short=9 HEAD)" >> "$GITHUB_OUTPUT"
+      - name: Restore the Hugo fork build
+        uses: actions/cache@v6
+        with:
+          path: /tmp/docsygen-hugo-doc
+          key: hugo-fork-${{ steps.fork.outputs.commit }}
+      - name: Compare the ${{ matrix.reader }} reader with expat
+        env:
+          READER: ${{ matrix.reader }}
+        run: sh tests/run.sh
